@@ -38,21 +38,19 @@ public class StandardizeDateProperties {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
             
-    public static final PropertyDescriptor FIELD_NAMES = new PropertyDescriptor
-            .Builder().name("FIELD_NAMES")
-            .displayName("Field Names")
-            .description("Comma separated list of fields whose values to encrypt.")
+    public static final PropertyDescriptor INVALID_DATES = new PropertyDescriptor
+            .Builder().name("INVALID_DATES")
+            .displayName("Invalid Dates")
+            .description("JSON Object of key/value pairs with name of field in FlowFile as key and type of date as value. For example: {\"my_date_field\": \"MM/dd/yyyy\"}")
             .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
     
-    public static final PropertyDescriptor HASH_ALG = new PropertyDescriptor
-            .Builder().name("HASH_ALG")
-            .displayName("Hash Algorithm")
-            .description("Determines what hashing algorithm should be used to perform the encryption")
-            .required(true)
-            .allowableValues("")
-            .defaultValue("SHA-512")
+    public static final PropertyDescriptor TIMEZONE = new PropertyDescriptor
+            .Builder().name("TIMEZONE")
+            .displayName("Timezone")
+            .description("The originating timezone of the date fields in the FlowFile")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
-
 }

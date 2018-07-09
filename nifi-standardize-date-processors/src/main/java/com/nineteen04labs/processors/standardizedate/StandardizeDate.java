@@ -24,17 +24,23 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nineteen04labs.processors.util.FormatStream;
+import com.nineteen04labs.processors.util.ManipulateDate;
 
+import org.apache.avro.Schema;
+import org.apache.avro.Schema.Type;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
@@ -47,8 +53,8 @@ import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.io.StreamCallback;
 
-@Tags({"encrypt", "hash", "json", "pii"})
-@CapabilityDescription("Encrypts the values of the given fields of a FlowFile. The original value is replaced with the hashed one.")
+@Tags({"date", "time", "datetime", "standardize", "standardization"})
+@CapabilityDescription("NiFi processor to standardize date fields in a FlowFile.")
 public class StandardizeDate extends AbstractProcessor {
 
     private List<PropertyDescriptor> descriptors;
@@ -59,8 +65,8 @@ public class StandardizeDate extends AbstractProcessor {
         final List<PropertyDescriptor> descriptors = new ArrayList<PropertyDescriptor>();
         descriptors.add(StandardizeDateProperties.FLOW_FORMAT);
         descriptors.add(StandardizeDateProperties.AVRO_SCHEMA);
-        descriptors.add(StandardizeDateProperties.FIELD_NAMES);
-        descriptors.add(StandardizeDateProperties.HASH_ALG);
+        descriptors.add(StandardizeDateProperties.INVALID_DATES);
+        descriptors.add(StandardizeDateProperties.TIMEZONE);
         this.descriptors = Collections.unmodifiableList(descriptors);
 
         final Set<Relationship> relationships = new HashSet<Relationship>();
@@ -87,28 +93,39 @@ public class StandardizeDate extends AbstractProcessor {
             return;
         }
         try {
-            final String rawFieldNames = context.getProperty(StandardizeDateProperties.FIELD_NAMES).getValue();
-            if (rawFieldNames == null) {
+            final String invalidDatesString = context.getProperty(StandardizeDateProperties.INVALID_DATES).getValue();
+            if (invalidDatesString == null) {
                 session.transfer(flowFile, StandardizeDateRelationships.REL_BYPASS);
                 return;
             }
-            final List<String> fieldNames = Arrays.asList(rawFieldNames.split(","));
             final String flowFormat = context.getProperty(StandardizeDateProperties.FLOW_FORMAT).getValue();
             final String schemaString = context.getProperty(StandardizeDateProperties.AVRO_SCHEMA).getValue();
-            final String algorithm = context.getProperty(StandardizeDateProperties.HASH_ALG).getValue();
+            final String timezone = context.getProperty(StandardizeDateProperties.TIMEZONE).getValue();
             
             session.write(flowFile, new StreamCallback(){
                 @Override
                 public void process(InputStream in, OutputStream out) throws IOException {
+                    Map<String,String> invalidDates = new ObjectMapper().readValue(invalidDatesString, new TypeReference<HashMap<String,Object>>(){});
+
                     JsonFactory jsonFactory = new JsonFactory().setRootValueSeparator(null);
 
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
                     JsonParser jsonParser;
                     JsonGenerator jsonGen = jsonFactory.createGenerator(baos);
-
-                    if (flowFormat == "AVRO")
-                        FormatStream.avroToJson(in, schemaString);
+                    
+                    Schema schema = null;
+                    List<Schema.Field> schemaFields;
+                    Set<Schema.Field> newSchemaFields = new HashSet<>();
+                    if (flowFormat == "AVRO") {
+                        schema = new Schema.Parser().parse(schemaString);
+                        schemaFields = schema.getFields();
+                        for(Schema.Field f : schemaFields) {
+                            Schema.Field oldField = new Schema.Field(f.name(), f.schema(), f.doc(), f.defaultVal());
+                            newSchemaFields.add(oldField);
+                        } 
+                        in = FormatStream.avroToJson(in, schema);
+                    }
 
                     Reader r = new InputStreamReader(in);
                     BufferedReader br = new BufferedReader(r);
@@ -118,17 +135,31 @@ public class StandardizeDate extends AbstractProcessor {
                         jsonParser = jsonFactory.createParser(line);
                         while (jsonParser.nextToken() != null) {
                             jsonGen.copyCurrentEvent(jsonParser);
-                            if(fieldNames.contains(jsonParser.getCurrentName())) {
+                            String tokenString = jsonParser.getText();
+                            if(invalidDates.containsKey(tokenString)) {
                                 jsonParser.nextToken();
-                                jsonGen.writeString("");
+                                jsonGen.copyCurrentEvent(jsonParser);
+
+                                String newFieldName = tokenString + "_standardized";
+                                jsonGen.writeFieldName(newFieldName);
+
+                                String invalidDate = jsonParser.getText();
+                                String invalidDateFormat = invalidDates.get(tokenString);
+                                jsonGen.writeString(ManipulateDate.standardize(invalidDate, invalidDateFormat, timezone));
+
+                                if (flowFormat == "AVRO")
+                                    newSchemaFields.add(new Schema.Field(newFieldName, Schema.create(Type.STRING), null, "null"));
                             }
                         }
                         jsonGen.writeRaw("\n");
                     }
                     jsonGen.flush();
 
-                    if (flowFormat == "AVRO")
-                        FormatStream.jsonToAvro(baos, schemaString);
+                    if (flowFormat == "AVRO") {
+                        Schema newSchema = Schema.createRecord(schema.getName(), schema.getDoc(), schema.getNamespace(), schema.isError());
+                        newSchema.setFields(new ArrayList<>(newSchemaFields));
+                        baos = FormatStream.jsonToAvro(baos, newSchema);
+                    }
 
                     baos.writeTo(out);
                 }

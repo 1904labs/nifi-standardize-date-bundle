@@ -5,6 +5,9 @@
     "name" : "status",
     "type" : "string"
   }, {
+    "name" : "bad_date",
+    "type" : "string"
+  }, {
     "name" : "location",
     "type" : {
       "type" : "record",

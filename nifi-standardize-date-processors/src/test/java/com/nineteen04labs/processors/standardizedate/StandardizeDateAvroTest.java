@@ -17,22 +17,32 @@
 package com.nineteen04labs.processors.standardizedate;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.nifi.util.MockFlowFile;
 import org.apache.nifi.util.TestRunner;
 import org.apache.nifi.util.TestRunners;
+import org.junit.Before;
 import org.junit.Test;
 
-public class StandardizeDateJsonTest {
+public class StandardizeDateAvroTest {
 
-    private final Path unprocessedFile = Paths.get("src/test/resources/unprocessed.json");
+    private final Path unprocessedFile = Paths.get("src/test/resources/unprocessed.avro");
+    private String avroSchema = "";
     private final TestRunner runner = TestRunners.newTestRunner(new StandardizeDate());
+
+    @Before
+    public void setSchema() throws IOException {
+        avroSchema = FileUtils.readFileToString(FileUtils.getFile("src/test/resources/unprocessed.avsc"), StandardCharsets.UTF_8);
+    }
 
     @Test
     public void testNoProcessing() throws IOException {
-        runner.setProperty(StandardizeDateProperties.FLOW_FORMAT, "JSON");
+        runner.setProperty(StandardizeDateProperties.FLOW_FORMAT, "AVRO");
+        runner.setProperty(StandardizeDateProperties.AVRO_SCHEMA, avroSchema);
 
         runner.enqueue(unprocessedFile);
 
@@ -47,9 +57,8 @@ public class StandardizeDateJsonTest {
 
     @Test
     public void testStandardization() throws IOException {
-        final Path processedFile = Paths.get("src/test/resources/processed.json");
-
-        runner.setProperty(StandardizeDateProperties.FLOW_FORMAT, "JSON");
+        runner.setProperty(StandardizeDateProperties.FLOW_FORMAT, "AVRO");
+        runner.setProperty(StandardizeDateProperties.AVRO_SCHEMA, avroSchema);
         runner.setProperty(StandardizeDateProperties.INVALID_DATES, "{\"bad_date\":\"MM/dd/yy\"}");
         runner.setProperty(StandardizeDateProperties.TIMEZONE, "America/Chicago");
 
@@ -58,10 +67,6 @@ public class StandardizeDateJsonTest {
         runner.run();
         runner.assertQueueEmpty();
         runner.assertAllFlowFilesTransferred(StandardizeDateRelationships.REL_SUCCESS, 1);
-
-        final MockFlowFile outFile = runner.getFlowFilesForRelationship(StandardizeDateRelationships.REL_SUCCESS).get(0);
-
-        outFile.assertContentEquals(processedFile);
     }
 
 }
