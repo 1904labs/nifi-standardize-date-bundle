@@ -64,4 +64,22 @@ public class StandardizeDateJsonTest {
         outFile.assertContentEquals(processedFile);
     }
 
+    @Test
+    public void testShortZoneId() throws IOException {
+        final Path processedFile = Paths.get("src/test/resources/processed.json");
+
+        runner.setProperty(StandardizeDateProperties.FLOW_FORMAT, "JSON");
+        runner.setProperty(StandardizeDateProperties.INVALID_DATES, "{\"bad_date\":\"MM/dd/yy\"}");
+        runner.setProperty(StandardizeDateProperties.TIMEZONE, "CST");
+
+        runner.enqueue(unprocessedFile);
+
+        runner.run();
+        runner.assertQueueEmpty();
+        runner.assertAllFlowFilesTransferred(StandardizeDateRelationships.REL_SUCCESS, 1);
+
+        final MockFlowFile outFile = runner.getFlowFilesForRelationship(StandardizeDateRelationships.REL_SUCCESS).get(0);
+
+        outFile.assertContentEquals(processedFile);
+    }
 }

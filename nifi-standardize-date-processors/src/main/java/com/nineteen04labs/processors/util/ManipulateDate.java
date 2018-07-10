@@ -27,17 +27,27 @@ import java.time.format.DateTimeParseException;
 public class ManipulateDate {
 
     public static String standardize(String dateTime, String format, String timezone) {
-        DateTimeFormatter dtFormat = DateTimeFormatter.ofPattern(format);
+        DateTimeFormatter dtFormat = null;
+        try {
+            dtFormat = DateTimeFormatter.ofPattern(format);
+        } catch (DateTimeParseException e) {
+            e.printStackTrace();
+        }
+
         LocalDateTime localDT = null;
         try {
             localDT = LocalDateTime.parse(dateTime, dtFormat);
         } catch (DateTimeParseException e) {
             localDT = LocalDate.parse(dateTime, dtFormat).atStartOfDay();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         
-        ZoneId localZone = ZoneId.of(timezone);
+        ZoneId localZone = null;
+        try {
+            localZone = ZoneId.of(ZoneId.SHORT_IDS.get(timezone));
+        } catch (NullPointerException e) {
+            localZone = ZoneId.of(timezone);
+        }
+
         ZonedDateTime localZonedDT = ZonedDateTime.of(localDT, localZone);
         ZonedDateTime standardizedDT = localZonedDT.withZoneSameInstant(ZoneOffset.UTC);
 

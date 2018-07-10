@@ -49,7 +49,7 @@ public class StandardizeDateProperties {
     public static final PropertyDescriptor TIMEZONE = new PropertyDescriptor
             .Builder().name("TIMEZONE")
             .displayName("Timezone")
-            .description("The originating timezone of the date fields in the FlowFile")
+            .description("The originating timezone of the date fields in the FlowFile. Short or standard IDs accepted (i.e. 'CST' or 'America/Chicago')")
             .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();

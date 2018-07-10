@@ -145,7 +145,13 @@ public class StandardizeDate extends AbstractProcessor {
 
                                 String invalidDate = jsonParser.getText();
                                 String invalidDateFormat = invalidDates.get(tokenString);
-                                jsonGen.writeString(ManipulateDate.standardize(invalidDate, invalidDateFormat, timezone));
+                                String standardizedDate;
+                                try {
+                                    standardizedDate = ManipulateDate.standardize(invalidDate, invalidDateFormat, timezone);
+                                } catch (Exception e) {
+                                    throw new ProcessException("Couldn't convert '" + invalidDate + "' with format '" + invalidDateFormat + "' with timezone '" + timezone + "'");
+                                }
+                                jsonGen.writeString(standardizedDate);
 
                                 if (flowFormat == "AVRO")
                                     newSchemaFields.add(new Schema.Field(newFieldName, Schema.create(Type.STRING), null, "null"));
