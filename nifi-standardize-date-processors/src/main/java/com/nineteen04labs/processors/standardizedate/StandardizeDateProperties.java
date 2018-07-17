@@ -36,6 +36,7 @@ public class StandardizeDateProperties {
             .description("Specify the schema if the FlowFile format is Avro.")
             .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
             .build();
             
     public static final PropertyDescriptor INVALID_DATES = new PropertyDescriptor
@@ -44,6 +45,7 @@ public class StandardizeDateProperties {
             .description("JSON Object of key/value pairs with name of field in FlowFile as key and type of date as value. For example: {\"my_date_field\": \"MM/dd/yyyy\"}")
             .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
             .build();
     
     public static final PropertyDescriptor TIMEZONE = new PropertyDescriptor
@@ -52,5 +54,6 @@ public class StandardizeDateProperties {
             .description("The originating timezone of the date fields in the FlowFile. Short or standard IDs accepted (i.e. 'CST' or 'America/Chicago')")
             .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
             .build();
 }
