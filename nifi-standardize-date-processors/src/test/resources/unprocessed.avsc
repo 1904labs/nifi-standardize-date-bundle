@@ -8,6 +8,9 @@
     "name" : "bad_date",
     "type" : "string"
   }, {
+    "name" : "bad_date_union",
+    "type" : ["null","string"]
+  }, {
     "name" : "location",
     "type" : {
       "type" : "record",

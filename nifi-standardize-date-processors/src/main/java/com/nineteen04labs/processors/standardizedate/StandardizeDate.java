@@ -52,6 +52,7 @@ import org.apache.nifi.processor.ProcessorInitializationContext;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.io.StreamCallback;
+import org.codehaus.jackson.node.NullNode;
 
 @Tags({"date", "time", "datetime", "standardize", "standardization"})
 @CapabilityDescription("NiFi processor to standardize date fields in a FlowFile.")
@@ -123,7 +124,7 @@ public class StandardizeDate extends AbstractProcessor {
                         for(Schema.Field f : schemaFields) {
                             Schema.Field oldField = new Schema.Field(f.name(), f.schema(), f.doc(), f.defaultVal());
                             newSchemaFields.add(oldField);
-                        } 
+                        }
                         in = FormatStream.avroToJson(in, schema);
                     }
 
@@ -146,15 +147,27 @@ public class StandardizeDate extends AbstractProcessor {
                                 String invalidDate = jsonParser.getText();
                                 String invalidDateFormat = invalidDates.get(tokenString);
                                 String standardizedDate;
+
                                 try {
-                                    standardizedDate = ManipulateDate.standardize(invalidDate, invalidDateFormat, timezone);
+                                    if (invalidDate != "null") {
+                                        standardizedDate = ManipulateDate.standardize(invalidDate, invalidDateFormat, timezone);
+                                        jsonGen.writeString(standardizedDate);
+                                    }
+                                    else
+                                        jsonGen.writeNull();
                                 } catch (Exception e) {
                                     throw new ProcessException("Couldn't convert '" + invalidDate + "' with format '" + invalidDateFormat + "' with timezone '" + timezone + "'");
                                 }
-                                jsonGen.writeString(standardizedDate);
 
-                                if (flowFormat == "AVRO")
-                                    newSchemaFields.add(new Schema.Field(newFieldName, Schema.create(Type.STRING), null, "null"));
+                                if (flowFormat == "AVRO") {
+                                    if (schema.getField(tokenString).schema().getType() == Schema.Type.UNION) {
+                                        ArrayList<Schema> unionSchema = new ArrayList<>();
+                                        unionSchema.add(Schema.create(Schema.Type.NULL));
+                                        unionSchema.add(Schema.create(Schema.Type.STRING));
+                                        newSchemaFields.add(new Schema.Field(newFieldName, Schema.createUnion(unionSchema), null, NullNode.getInstance()));
+                                    } else
+                                        newSchemaFields.add(new Schema.Field(newFieldName, Schema.create(Type.STRING), null, "null"));
+                                }
                             }
                         }
                         jsonGen.writeRaw("\n");

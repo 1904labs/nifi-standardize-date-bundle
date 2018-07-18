@@ -19,11 +19,11 @@
     <parent>
         <groupId>com.nineteen04labs</groupId>
         <artifactId>nifi-standardize-date-bundle</artifactId>
-        <version>18.07.2</version>
+        <version>18.07.3</version>
     </parent>
 
     <artifactId>nifi-standardize-date-nar</artifactId>
-    <version>18.07.2</version>
+    <version>18.07.3</version>
     <packaging>nar</packaging>
     <properties>
         <maven.javadoc.skip>true</maven.javadoc.skip>
@@ -34,7 +34,7 @@
         <dependency>
             <groupId>com.nineteen04labs</groupId>
             <artifactId>nifi-standardize-date-processors</artifactId>
-            <version>18.07.2</version>
+            <version>18.07.3</version>
         </dependency>
     </dependencies>
 

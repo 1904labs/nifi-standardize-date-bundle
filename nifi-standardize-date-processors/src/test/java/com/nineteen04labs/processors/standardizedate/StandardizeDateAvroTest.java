@@ -10,7 +10,7 @@
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express/ or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -43,6 +43,7 @@ public class StandardizeDateAvroTest {
     public void testNoProcessing() throws IOException {
         runner.setProperty(StandardizeDateProperties.FLOW_FORMAT, "AVRO");
         runner.setProperty(StandardizeDateProperties.AVRO_SCHEMA, avroSchema);
+        runner.setValidateExpressionUsage(false);
 
         runner.enqueue(unprocessedFile);
 
@@ -59,8 +60,9 @@ public class StandardizeDateAvroTest {
     public void testStandardization() throws IOException {
         runner.setProperty(StandardizeDateProperties.FLOW_FORMAT, "AVRO");
         runner.setProperty(StandardizeDateProperties.AVRO_SCHEMA, avroSchema);
-        runner.setProperty(StandardizeDateProperties.INVALID_DATES, "{\"bad_date\":\"MM/dd/yy\"}");
+        runner.setProperty(StandardizeDateProperties.INVALID_DATES, "{\"bad_date\":\"MM/dd/yy\",\"bad_date_union\":\"MM/dd/yy\"}");
         runner.setProperty(StandardizeDateProperties.TIMEZONE, "America/Chicago");
+        runner.setValidateExpressionUsage(false);
 
         runner.enqueue(unprocessedFile);
 
