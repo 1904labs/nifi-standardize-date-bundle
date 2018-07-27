@@ -94,14 +94,14 @@ public class StandardizeDate extends AbstractProcessor {
             return;
         }
         try {
-            final String invalidDatesString = context.getProperty(StandardizeDateProperties.INVALID_DATES).getValue();
+            final String invalidDatesString = context.getProperty(StandardizeDateProperties.INVALID_DATES).evaluateAttributeExpressions(flowFile).getValue();
             if (invalidDatesString == null) {
                 session.transfer(flowFile, StandardizeDateRelationships.REL_BYPASS);
                 return;
             }
             final String flowFormat = context.getProperty(StandardizeDateProperties.FLOW_FORMAT).getValue();
-            final String schemaString = context.getProperty(StandardizeDateProperties.AVRO_SCHEMA).getValue();
-            final String timezone = context.getProperty(StandardizeDateProperties.TIMEZONE).getValue();
+            final String schemaString = context.getProperty(StandardizeDateProperties.AVRO_SCHEMA).evaluateAttributeExpressions(flowFile).getValue();
+            final String timezone = context.getProperty(StandardizeDateProperties.TIMEZONE).evaluateAttributeExpressions(flowFile).getValue();
             
             session.write(flowFile, new StreamCallback(){
                 @Override
@@ -118,7 +118,7 @@ public class StandardizeDate extends AbstractProcessor {
                     Schema schema = null;
                     List<Schema.Field> schemaFields;
                     Set<Schema.Field> newSchemaFields = new HashSet<>();
-                    if (flowFormat == "AVRO") {
+                    if (flowFormat.equals("AVRO")) {
                         schema = new Schema.Parser().parse(schemaString);
                         schemaFields = schema.getFields();
                         for(Schema.Field f : schemaFields) {
@@ -159,7 +159,7 @@ public class StandardizeDate extends AbstractProcessor {
                                     throw new ProcessException("Couldn't convert '" + invalidDate + "' with format '" + invalidDateFormat + "' with timezone '" + timezone + "'");
                                 }
 
-                                if (flowFormat == "AVRO") {
+                                if (flowFormat.equals("AVRO")) {
                                     if (schema.getField(tokenString).schema().getType() == Schema.Type.UNION) {
                                         ArrayList<Schema> unionSchema = new ArrayList<>();
                                         unionSchema.add(Schema.create(Schema.Type.NULL));
@@ -174,7 +174,7 @@ public class StandardizeDate extends AbstractProcessor {
                     }
                     jsonGen.flush();
 
-                    if (flowFormat == "AVRO") {
+                    if (flowFormat.equals("AVRO")) {
                         Schema newSchema = Schema.createRecord(schema.getName(), schema.getDoc(), schema.getNamespace(), schema.isError());
                         newSchema.setFields(new ArrayList<>(newSchemaFields));
                         baos = FormatStream.jsonToAvro(baos, newSchema);
