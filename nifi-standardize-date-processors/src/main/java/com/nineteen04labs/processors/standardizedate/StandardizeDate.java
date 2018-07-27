@@ -119,7 +119,12 @@ public class StandardizeDate extends AbstractProcessor {
                     List<Schema.Field> schemaFields;
                     Set<Schema.Field> newSchemaFields = new HashSet<>();
                     if (flowFormat.equals("AVRO")) {
-                        schema = new Schema.Parser().parse(schemaString);
+                        try {
+                            schema = new Schema.Parser().parse(schemaString);
+                        } catch (NullPointerException e) {
+                            schema = FormatStream.getEmbeddedSchema(in);
+                            in.reset();
+                        }
                         schemaFields = schema.getFields();
                         for(Schema.Field f : schemaFields) {
                             Schema.Field oldField = new Schema.Field(f.name(), f.schema(), f.doc(), f.defaultVal());

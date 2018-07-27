@@ -20,7 +20,7 @@
     <parent>
         <groupId>com.nineteen04labs</groupId>
         <artifactId>nifi-standardize-date-bundle</artifactId>
-        <version>18.07.4</version>
+        <version>18.07.5</version>
     </parent>
 
     <artifactId>nifi-standardize-date-processors</artifactId>

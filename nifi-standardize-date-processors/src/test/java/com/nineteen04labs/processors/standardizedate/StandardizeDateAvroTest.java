@@ -43,7 +43,6 @@ public class StandardizeDateAvroTest {
     public void testNoProcessing() throws IOException {
         runner.setProperty(StandardizeDateProperties.FLOW_FORMAT, "AVRO");
         runner.setProperty(StandardizeDateProperties.AVRO_SCHEMA, avroSchema);
-        runner.setValidateExpressionUsage(false);
 
         runner.enqueue(unprocessedFile);
 
@@ -62,7 +61,19 @@ public class StandardizeDateAvroTest {
         runner.setProperty(StandardizeDateProperties.AVRO_SCHEMA, avroSchema);
         runner.setProperty(StandardizeDateProperties.INVALID_DATES, "{\"bad_date\":\"MM/dd/yy\",\"bad_date_union\":\"MM/dd/yy\"}");
         runner.setProperty(StandardizeDateProperties.TIMEZONE, "America/Chicago");
-        runner.setValidateExpressionUsage(false);
+
+        runner.enqueue(unprocessedFile);
+
+        runner.run();
+        runner.assertQueueEmpty();
+        runner.assertAllFlowFilesTransferred(StandardizeDateRelationships.REL_SUCCESS, 1);
+    }
+
+    @Test
+    public void testStandardizationNoSchema() throws IOException {
+        runner.setProperty(StandardizeDateProperties.FLOW_FORMAT, "AVRO");
+        runner.setProperty(StandardizeDateProperties.INVALID_DATES, "{\"bad_date\":\"MM/dd/yy\",\"bad_date_union\":\"MM/dd/yy\"}");
+        runner.setProperty(StandardizeDateProperties.TIMEZONE, "America/Chicago");
 
         runner.enqueue(unprocessedFile);
 

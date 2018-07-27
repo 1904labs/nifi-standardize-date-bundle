@@ -14,7 +14,8 @@ Build the bundle
 
 ```shell
 cd nifi-standardize-date-bundle
-mvn clean install
+mvn initialize
+mvn clean package
 ```
 
 Copy Nar file to $NIFI_HOME/lib
@@ -54,5 +55,5 @@ The originating timezone of the date fields in the FlowFile. Short or standard I
 
 - Use drop-down (with custom option) for timezone
 - Allow choice of Avro compression (Snappy, bzip2, etc.)
-- Infer Avro schema if not passed in
+- ~~Infer Avro schema if not passed in~~
 - Better unit tests for Avro

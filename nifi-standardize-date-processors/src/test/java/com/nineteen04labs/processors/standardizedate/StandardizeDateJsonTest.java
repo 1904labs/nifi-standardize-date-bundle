@@ -33,7 +33,6 @@ public class StandardizeDateJsonTest {
     @Test
     public void testNoProcessing() throws IOException {
         runner.setProperty(StandardizeDateProperties.FLOW_FORMAT, "JSON");
-        runner.setValidateExpressionUsage(false);
 
         runner.enqueue(unprocessedFile);
 
@@ -53,7 +52,6 @@ public class StandardizeDateJsonTest {
         runner.setProperty(StandardizeDateProperties.FLOW_FORMAT, "JSON");
         runner.setProperty(StandardizeDateProperties.INVALID_DATES, "{\"bad_date\":\"MM/dd/yy\"}");
         runner.setProperty(StandardizeDateProperties.TIMEZONE, "America/Chicago");
-        runner.setValidateExpressionUsage(false);
 
         runner.enqueue(unprocessedFile);
 
@@ -73,7 +71,6 @@ public class StandardizeDateJsonTest {
         runner.setProperty(StandardizeDateProperties.FLOW_FORMAT, "JSON");
         runner.setProperty(StandardizeDateProperties.INVALID_DATES, "{\"bad_date\":\"MM/dd/yy\"}");
         runner.setProperty(StandardizeDateProperties.TIMEZONE, "CST");
-        runner.setValidateExpressionUsage(false);
 
         runner.enqueue(unprocessedFile);
 
