@@ -20,7 +20,7 @@
     <parent>
         <groupId>com.nineteen04labs</groupId>
         <artifactId>nifi-standardize-date-bundle</artifactId>
-        <version>18.07.5</version>
+        <version>18.08.0</version>
     </parent>
 
     <artifactId>nifi-standardize-date-processors</artifactId>
@@ -46,6 +46,11 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>4.2</version>
         </dependency>
         <!-- Import custom avro that we built below to handle union file types -->
         <dependency>

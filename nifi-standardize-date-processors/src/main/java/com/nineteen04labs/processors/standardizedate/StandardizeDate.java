@@ -25,7 +25,6 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +40,7 @@ import com.nineteen04labs.processors.util.ManipulateDate;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Type;
+import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
@@ -106,7 +106,8 @@ public class StandardizeDate extends AbstractProcessor {
             session.write(flowFile, new StreamCallback(){
                 @Override
                 public void process(InputStream in, OutputStream out) throws IOException {
-                    Map<String,String> invalidDates = new ObjectMapper().readValue(invalidDatesString, new TypeReference<HashMap<String,Object>>(){});
+                    Map<String,String> invalidDates = new ObjectMapper()
+                        .readValue(invalidDatesString, new TypeReference<CaseInsensitiveMap<String,String>>(){});
 
                     JsonFactory jsonFactory = new JsonFactory().setRootValueSeparator(null);
 
