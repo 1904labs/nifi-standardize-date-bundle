@@ -43,7 +43,7 @@ public class ManipulateDate {
         
         ZoneId localZone = null;
         try {
-            localZone = ZoneId.of(ZoneId.SHORT_IDS.get(timezone));
+            localZone = ZoneId.of(ZoneId.SHORT_IDS.get(timezone.toUpperCase()));
         } catch (NullPointerException e) {
             localZone = ZoneId.of(timezone);
         }

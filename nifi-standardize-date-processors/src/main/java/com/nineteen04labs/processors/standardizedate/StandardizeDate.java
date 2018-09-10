@@ -33,6 +33,7 @@ import java.util.Set;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nineteen04labs.processors.util.FormatStream;
@@ -143,7 +144,7 @@ public class StandardizeDate extends AbstractProcessor {
                         while (jsonParser.nextToken() != null) {
                             jsonGen.copyCurrentEvent(jsonParser);
                             String tokenString = jsonParser.getText();
-                            if(invalidDates.containsKey(tokenString)) {
+                            if(jsonParser.getCurrentToken() == JsonToken.FIELD_NAME && invalidDates.containsKey(tokenString)) {
                                 jsonParser.nextToken();
                                 jsonGen.copyCurrentEvent(jsonParser);
 
