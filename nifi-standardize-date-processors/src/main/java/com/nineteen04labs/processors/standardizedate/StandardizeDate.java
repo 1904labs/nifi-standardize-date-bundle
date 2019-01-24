@@ -96,7 +96,7 @@ public class StandardizeDate extends AbstractProcessor {
         }
         try {
             final String invalidDatesString = context.getProperty(StandardizeDateProperties.INVALID_DATES).evaluateAttributeExpressions(flowFile).getValue();
-            if (invalidDatesString == null) {
+            if ("".equals(invalidDatesString) || invalidDatesString == null) {
                 session.transfer(flowFile, StandardizeDateRelationships.REL_BYPASS);
                 return;
             }
