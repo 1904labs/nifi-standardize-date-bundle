@@ -20,7 +20,7 @@
     <parent>
         <groupId>com.nineteen04labs</groupId>
         <artifactId>nifi-standardize-date-bundle</artifactId>
-        <version>19.01.0</version>
+        <version>19.02.0</version>
     </parent>
 
     <artifactId>nifi-standardize-date-processors</artifactId>
@@ -61,7 +61,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.9.8</version>
+            <version>[2.9.9)</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

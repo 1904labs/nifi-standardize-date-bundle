@@ -9,3 +9,6 @@ target/
 .settings
 .vscode
 .project
+
+.idea/*
+*.iml
